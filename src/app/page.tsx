@@ -146,7 +146,7 @@ export default function Home() {
         )}
       </div>
       <footer className="mt-12 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} NeuroType Navigator. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} NeuroType Navigator. All rights reserved to Nada Yasser.</p>
         <p className="mt-1">This tool is for informational purposes only and not a substitute for professional advice.</p>
       </footer>
     </main>
