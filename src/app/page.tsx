@@ -122,8 +122,10 @@ export default function Home() {
         </div>
         {!showResults && (
           <p className="text-muted-foreground">
-            Answer the questions to understand your child's nervous system type.
+            Answer the questions to understand your child's nervous system type.<br />
+			By Nada Yasser
           </p>
+		  
         )}
       </header>
       <div className="w-full max-w-3xl">
