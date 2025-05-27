@@ -103,9 +103,9 @@ export default function Home() {
         </div>
         {!showResults && (
           <p className="text-muted-foreground">
-            By Nada Yasser
-			<br /><br />Answer the questions to understand your child's nervous system type. You can skip questions if you're unsure.
-          </p>
+          By Nada Yasser
+    <br /><br />Answer the questions to understand your child's nervous system type. You can skip questions if you're unsure.
+        </p>
         )}
       </header>
       <div className="w-full max-w-3xl">

@@ -97,11 +97,29 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
           console.log('[ResultsDisplay] Sending to AI:', JSON.stringify(input, null, 2));
           const result = await analyzeNeurotypeProfile(input);
           setAiAnalysis(result);
-        } catch (error) {
+        } catch (error: any) { // Catch error as any to access potential custom properties
           console.error("Error fetching AI analysis (ResultsDisplay):", error);
+          
+          // Log all available properties of the error object for better debugging
+          if (error && typeof error === 'object') {
+            console.error("Full error object details (ResultsDisplay):", {
+              message: error.message,
+              name: error.name,
+              stack: error.stack,
+              digest: error.digest, // Specifically log the digest
+              ...error // Spread other potential properties
+            });
+          }
+
           let displayError = "Failed to load AI-powered insights. Please try again later.";
-          if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-            displayError = `Failed to load AI-powered insights: ${error.message}`;
+          if (error?.message) {
+            if (error.message.includes("An error occurred in the Server Components render")) {
+              // If it's the generic server component error, include the digest
+              displayError = `Failed to load AI-powered insights. Server error digest: ${error.digest || 'N/A'}. Check server logs for more details.`;
+            } else {
+              // Otherwise, use the specific error message
+              displayError = `Failed to load AI-powered insights: ${error.message}`;
+            }
           } else if (typeof error === 'string') {
             displayError = `Failed to load AI-powered insights: ${error}`;
           }
@@ -112,7 +130,6 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
       };
       fetchAnalysis();
     } else {
-        // No dominant types, so no AI analysis to fetch
         setIsLoadingAi(false);
         setAiAnalysis(null);
         setAiError(null);
@@ -277,4 +294,4 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
     </Card>
   );
 }
-
+    
