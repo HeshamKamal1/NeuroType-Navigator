@@ -1,11 +1,12 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { ResultsDisplay } from "@/components/results-display";
-import { AppIcon, questionnaireData, NervousSystemType, totalTypes, Question } from "@/config/questionnaire";
+import { AppIcon, questionnaireData, NervousSystemType, totalTypes } from "@/config/questionnaire";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+// Removed useToast as it's no longer needed here for validation
 
 type Answers = Record<string, boolean | undefined>; // questionId: answer
 type Scores = Record<NervousSystemType, number>;
@@ -16,7 +17,7 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [scores, setScores] = useState<Scores>({} as Scores);
   const [isStarted, setIsStarted] = useState(false);
-  const { toast } = useToast();
+  // Removed toast from here
 
   const currentSection = questionnaireData[currentSectionIndex];
 
@@ -25,17 +26,7 @@ export default function Home() {
   };
 
   const handleNext = () => {
-    const currentQuestions = questionnaireData[currentSectionIndex].questions;
-    const allAnswered = currentQuestions.every(q => answers[q.id] !== undefined);
-
-    if (!allAnswered) {
-       toast({
-        title: "Incomplete Section",
-        description: "Please answer all questions in this section before proceeding.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Removed check for all questions answered
     if (currentSectionIndex < totalTypes - 1) {
       setCurrentSectionIndex((prev) => prev + 1);
     }
@@ -55,7 +46,7 @@ export default function Home() {
 
     questionnaireData.forEach(section => {
       section.questions.forEach(question => {
-        if (answers[question.id] === true) {
+        if (answers[question.id] === true) { // Only count 'yes' answers
           newScores[section.type]++;
         }
       });
@@ -64,17 +55,7 @@ export default function Home() {
   };
 
   const handleSubmit = () => {
-    const currentQuestions = questionnaireData[currentSectionIndex].questions;
-    const allAnswered = currentQuestions.every(q => answers[q.id] !== undefined);
-     if (!allAnswered) {
-       toast({
-        title: "Incomplete Section",
-        description: "Please answer all questions in the final section.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Removed check for all questions answered
     const calculatedScores = calculateScores();
     setScores(calculatedScores);
     setShowResults(true);
@@ -122,10 +103,9 @@ export default function Home() {
         </div>
         {!showResults && (
           <p className="text-muted-foreground">
-            Answer the questions to understand your child's nervous system type.<br />
-			By Nada Yasser
+            By Nada Yasser
+			<br /><br />Answer the questions to understand your child's nervous system type. You can skip questions if you're unsure.
           </p>
-		  
         )}
       </header>
       <div className="w-full max-w-3xl">

@@ -1,12 +1,12 @@
+
 "use client";
 
-import type { ChangeEvent } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import type { TypeSection, Question as QuestionType } from "@/config/questionnaire";
+import type { TypeSection } from "@/config/questionnaire";
 import { totalTypes } from "@/config/questionnaire";
 
 interface QuestionnaireFormProps {
@@ -31,7 +31,7 @@ export function QuestionnaireForm({
   const { title, questions, icon: Icon } = currentSection;
   const progressValue = ((currentSectionIndex + 1) / totalTypes) * 100;
 
-  const isCurrentSectionCompleted = questions.every(q => answers[q.id] !== undefined);
+  // Removed isCurrentSectionCompleted as questions are no longer mandatory
 
   return (
     <Card className="w-full shadow-xl">
@@ -46,7 +46,7 @@ export function QuestionnaireForm({
           </span>
         </div>
         <Progress value={progressValue} className="w-full h-3 mb-2" aria-label={`Progress: ${Math.round(progressValue)}% complete`} />
-        <CardDescription>Please answer "Yes" or "No" to the following statements about your child.</CardDescription>
+        <CardDescription>Please answer "Yes" or "No" to the following statements about your child. You can skip questions if unsure.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {questions.map((question, index) => (
@@ -74,11 +74,11 @@ export function QuestionnaireForm({
           Previous
         </Button>
         {currentSectionIndex < totalTypes - 1 ? (
-          <Button onClick={onNext} disabled={!isCurrentSectionCompleted}>
+          <Button onClick={onNext}> {/* Removed disabled prop */}
             Next
           </Button>
         ) : (
-          <Button onClick={onSubmit} disabled={!isCurrentSectionCompleted} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Button onClick={onSubmit} className="bg-accent hover:bg-accent/90 text-accent-foreground"> {/* Removed disabled prop */}
             Show Results
           </Button>
         )}
