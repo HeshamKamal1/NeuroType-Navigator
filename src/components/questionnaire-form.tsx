@@ -7,11 +7,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import type { TypeSection } from "@/config/questionnaire";
-import { totalTypes } from "@/config/questionnaire";
 
 interface QuestionnaireFormProps {
   currentSection: TypeSection;
   currentSectionIndex: number;
+  totalTypes: number;
   answers: Record<string, boolean | undefined>;
   onAnswerChange: (questionId: string, answer: boolean) => void;
   onNext: () => void;
@@ -22,16 +22,15 @@ interface QuestionnaireFormProps {
 export function QuestionnaireForm({
   currentSection,
   currentSectionIndex,
+  totalTypes,
   answers,
   onAnswerChange,
   onNext,
   onPrevious,
   onSubmit,
 }: QuestionnaireFormProps) {
-  const { title, questions, icon: Icon } = currentSection;
+  const { title, questions, icon: Icon, questionnaireTitle } = currentSection;
   const progressValue = ((currentSectionIndex + 1) / totalTypes) * 100;
-
-  // Removed isCurrentSectionCompleted as questions are no longer mandatory
 
   return (
     <Card className="w-full shadow-xl">
@@ -39,7 +38,7 @@ export function QuestionnaireForm({
         <div className="flex items-center justify-between mb-4">
           <CardTitle className="text-2xl font-semibold flex items-center">
             <Icon className="mr-3 h-7 w-7 text-primary" />
-            {title}
+            {questionnaireTitle || title}
           </CardTitle>
           <span className="text-sm text-muted-foreground">
             Step {currentSectionIndex + 1} of {totalTypes}
@@ -74,11 +73,11 @@ export function QuestionnaireForm({
           Previous
         </Button>
         {currentSectionIndex < totalTypes - 1 ? (
-          <Button onClick={onNext}> {/* Removed disabled prop */}
+          <Button onClick={onNext}>
             Next
           </Button>
         ) : (
-          <Button onClick={onSubmit} className="bg-accent hover:bg-accent/90 text-accent-foreground"> {/* Removed disabled prop */}
+          <Button onClick={onSubmit} className="bg-accent hover:bg-accent/90 text-accent-foreground">
             Show Results
           </Button>
         )}

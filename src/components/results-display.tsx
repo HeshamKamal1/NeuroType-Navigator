@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -6,13 +5,11 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NervousSystemType } from "@/config/questionnaire";
 import { questionnaireData } from "@/config/questionnaire";
-import { analyzeNeurotypeProfile, type AnalyzeNeurotypeOutput, type AnalyzeNeurotypeInput } from "@/ai/flows/analyze-neurotype-flow";
-import { Loader2 } from "lucide-react";
-
+// Removed: analyzeNeurotypeProfile, AnalyzeNeurotypeOutput, AnalyzeNeurotypeInput
+// Removed: Loader2
 
 interface ResultsDisplayProps {
   scores: Record<NervousSystemType, number>;
@@ -30,16 +27,19 @@ const COLORS = [
 ];
 
 export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
-  const [aiAnalysis, setAiAnalysis] = useState<AnalyzeNeurotypeOutput | null>(null);
-  const [isLoadingAi, setIsLoadingAi] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  // Removed: aiAnalysis, isLoadingAi, aiError state variables
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const chartData = useMemo(() => questionnaireData.map((section, index) => ({
     type: section.type,
-    name: section.title.split(":")[0], // e.g., "Type 1"
+    name: section.questionnaireTitle || section.title.split(":")[0], // Use questionnaireTitle if available for chart label
     fullTitle: section.title,
     description: section.description,
-    value: scores[section.type] || 0, // 'value' is typically used by PieChart for segment size
+    value: scores[section.type] || 0,
     icon: section.icon,
     fill: COLORS[index % COLORS.length],
   })), [scores]);
@@ -54,7 +54,7 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
       .filter((section) => scores[section.type] === maxScoreValue)
       .map(section => ({
         title: section.title,
-        shortTitle: section.title.split(":")[0],
+        shortTitle: section.questionnaireTitle || section.title.split(":")[0],
         description: section.description,
         icon: section.icon,
         score: scores[section.type],
@@ -83,58 +83,7 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
       .join(' & ') + ".";
   }, [dominantTypes, totalScore]);
 
-
-  useEffect(() => {
-    if (dominantTypes.length > 0) {
-      const fetchAnalysis = async () => {
-        setIsLoadingAi(true);
-        setAiError(null);
-        setAiAnalysis(null);
-        try {
-          const input: AnalyzeNeurotypeInput = {
-            dominantTypes: dominantTypes.map(dt => ({ name: dt.title })),
-          };
-          console.log('[ResultsDisplay] Sending to AI:', JSON.stringify(input, null, 2));
-          const result = await analyzeNeurotypeProfile(input);
-          setAiAnalysis(result);
-        } catch (error: any) { // Catch error as any to access potential custom properties
-          console.error("Error fetching AI analysis (ResultsDisplay):", error);
-          
-          // Log all available properties of the error object for better debugging
-          if (error && typeof error === 'object') {
-            console.error("Full error object details (ResultsDisplay):", {
-              message: error.message,
-              name: error.name,
-              stack: error.stack,
-              digest: error.digest, // Specifically log the digest
-              ...error // Spread other potential properties
-            });
-          }
-
-          let displayError = "Failed to load AI-powered insights. Please try again later.";
-          if (error?.message) {
-            if (error.message.includes("An error occurred in the Server Components render")) {
-              // If it's the generic server component error, include the digest
-              displayError = `Failed to load AI-powered insights. Server error digest: ${error.digest || 'N/A'}. Check server logs for more details.`;
-            } else {
-              // Otherwise, use the specific error message
-              displayError = `Failed to load AI-powered insights: ${error.message}`;
-            }
-          } else if (typeof error === 'string') {
-            displayError = `Failed to load AI-powered insights: ${error}`;
-          }
-          setAiError(displayError);
-        } finally {
-          setIsLoadingAi(false);
-        }
-      };
-      fetchAnalysis();
-    } else {
-        setIsLoadingAi(false);
-        setAiAnalysis(null);
-        setAiError(null);
-    }
-  }, [dominantTypes]);
+  // Removed useEffect hook for fetching AI analysis
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -151,7 +100,7 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
     return null;
   };
 
-  const showAiSection = dominantTypes.length > 0;
+  // Removed: const showAiSection = dominantTypes.length > 0;
 
   return (
     <Card className="w-full shadow-xl">
@@ -166,7 +115,7 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
         )}
       </CardHeader>
       <CardContent className="space-y-8">
-        {totalScore > 0 ? (
+        {isMounted && totalScore > 0 ? (
           <div style={{ width: '100%', height: 350 }}>
             <ResponsiveContainer>
               <PieChart>
@@ -202,6 +151,8 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
               </PieChart>
             </ResponsiveContainer>
           </div>
+        ) : totalScore > 0 ? (
+           <Skeleton className="w-full h-[350px]" />
         ) : (
            <Alert variant="default" className="mt-4">
             <AlertTitle>No Scores Recorded</AlertTitle>
@@ -232,55 +183,7 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
           </Alert>
          )}
 
-        {showAiSection && (
-          <div className="pt-6 border-t">
-            <Accordion type="single" collapsible className="w-full" defaultValue="ai-analysis">
-              <AccordionItem value="ai-analysis">
-                <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                  <div className="flex items-center">
-                  {isLoadingAi && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                  AI-Powered Insights & Guidance
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pt-4 space-y-4">
-                  {isLoadingAi && (
-                    <>
-                      <Skeleton className="h-6 w-1/3 mb-2" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-4/5 mb-4" />
-                      <Skeleton className="h-6 w-1/4 mb-2" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                    </>
-                  )}
-                  {aiError && !isLoadingAi && (
-                    <Alert variant="destructive">
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{aiError}</AlertDescription>
-                    </Alert>
-                  )}
-                  {aiAnalysis && !isLoadingAi && !aiError && (
-                    <>
-                      <div>
-                        <h4 className="text-lg font-semibold mb-2 text-foreground">Character Analysis</h4>
-                        <p className="text-muted-foreground whitespace-pre-line">{aiAnalysis.characterAnalysis}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-semibold mt-4 mb-2 text-foreground">Tips for Parents</h4>
-                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                          {aiAnalysis.parentingTips.map((tip, index) => (
-                            <li key={index}>{tip}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        )}
+        {/* Removed AI Analysis Section (Accordion, loading states, error messages, AI content) */}
 
       </CardContent>
       <CardFooter className="pt-6 flex-col items-center space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
@@ -288,10 +191,9 @@ export function ResultsDisplay({ scores, onRestart }: ResultsDisplayProps) {
           Start Over
         </Button>
          <p className="text-xs text-muted-foreground text-center sm:text-right">
-          AI analysis is experimental. Always consult with a professional for guidance.
+          This tool is for informational purposes and not a substitute for professional advice.
         </p>
       </CardFooter>
     </Card>
   );
 }
-    
